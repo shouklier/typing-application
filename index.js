@@ -1,4 +1,5 @@
-let position = {
+let state = {
+  wordcount: 15,
   word: 0,
   letter: 0,
   space: false,
@@ -6,8 +7,8 @@ let position = {
 
 function keyDownHandler(e) {
   console.log("keydowned");
-  if (e.key == "Backspace" && position.space) {
-    position.space = false;
+  if (e.key == "Backspace" && state.space) {
+    state.space = false;
     getLetter().style.opacity = 0.7;
     getLetter().style.color = "white";
     renderCursor();
@@ -16,17 +17,17 @@ function keyDownHandler(e) {
 
   if (e.key == "Backspace") {
     getLetter().style.opacity = 0.7;
-    console.log(position.word);
-    if (position.word == 0 && position.letter == 0) return;
-    if (position.letter == 0) {
+    console.log(state.word);
+    if (state.word == 0 && state.letter == 0) return;
+    if (state.letter == 0) {
       getLetter().style.opacity = 0.7;
       getLetter().style.color = "white";
-      position.word--;
-      position.letter = words[position.word].length - 1;
-      position.space = true;
+      state.word--;
+      state.letter = words[state.word].length - 1;
+      state.space = true;
       renderCursor();
     } else {
-      position.letter--;
+      state.letter--;
       getLetter().style.opacity = 0.7;
       getLetter().style.color = "white";
       renderCursor();
@@ -38,14 +39,14 @@ let isTiming = false;
 let intervalKey;
 
 function keyPressHandler(e) {
-  const currentWord = words[position.word];
-  const currentLetter = currentWord[position.letter];
+  const currentWord = words[state.word];
+  const currentLetter = currentWord[state.letter];
   const currentKey = e.key;
 
   let newIsTiming = !(
     currentKey == currentLetter &&
-    position.word == words.length - 1 &&
-    position.letter == words[words.length - 1].length - 1
+    state.word == words.length - 1 &&
+    state.letter == words[words.length - 1].length - 1
   );
 
   if (!isTiming && newIsTiming) {
@@ -62,34 +63,36 @@ function keyPressHandler(e) {
   if (!newIsTiming && isTiming) {
     clearInterval(intervalKey);
     isTiming = false;
-    endSession();
+    const diff = Date.now() - startDate.getTime();
+    let wpm = state.wordcount / (diff / 60000);
+    endSession(wpm);
   }
 
-  if (currentKey == " " && position.space) {
-    position.word++;
-    position.space = false;
-    position.letter = 0;
+  if (currentKey == " " && state.space) {
+    state.word++;
+    state.space = false;
+    state.letter = 0;
     renderCursor();
     return;
   }
 
   if (currentKey == currentLetter) {
     getLetter().style.opacity = 1;
-    if (position.letter == currentWord.length - 1) {
-      position.space = true;
+    if (state.letter == currentWord.length - 1) {
+      state.space = true;
       renderCursor();
     } else {
-      position.letter++;
+      state.letter++;
       renderCursor();
     }
   } else {
     getLetter().style.opacity = 1;
     getLetter().style.color = "red";
-    if (position.letter == currentWord.length - 1) {
-      position.space = true;
+    if (state.letter == currentWord.length - 1) {
+      state.space = true;
       renderCursor();
     } else {
-      position.letter++;
+      state.letter++;
       renderCursor();
     }
   }
@@ -99,21 +102,19 @@ let startDate = new Date();
 
 let words = [];
 
-let charcount = 0;
-
 function getWord() {
   const wordsdiv = document.querySelector(".words");
-  return wordsdiv.children[position.word];
+  return wordsdiv.children[state.word];
 }
 
 function getLetter() {
-  return getWord().children[position.letter];
+  return getWord().children[state.letter];
 }
 
 function renderCursor() {
   const cursor = document.querySelector(".cursor");
   const letter = getLetter();
-  if (!position.space) {
+  if (!state.space) {
     cursor.style.left = letter.getBoundingClientRect().left.toString() + "px";
   } else {
     cursor.style.left = letter.getBoundingClientRect().right.toString() + "px";
@@ -124,9 +125,24 @@ function renderCursor() {
 async function endSession(wpm) {
   window.removeEventListener("keydown", keyDownHandler);
   window.removeEventListener("keypress", keyPressHandler);
+  words = [];
 
-  const wordsDiv = document.querySelector(".words");
-  wordsDiv.remove("typingbox");
+  state = {
+    wordcount: 15,
+    word: 0,
+    letter: 0,
+    space: false,
+  };
+
+  startDate = new Date();
+
+  const wordsDiv = document.querySelector(".typingbox");
+  const timer = document.querySelector(".timer");
+  timer.remove();
+  wordsDiv.remove();
+
+  console.log(wpm);
+  startSession();
 }
 
 async function startSession() {
@@ -135,10 +151,12 @@ async function startSession() {
   const shit = text.split("\n").map((s) => s.trim());
 
   var i = 0;
-  while (i < 15) {
+  while (i < state.wordcount) {
     words.push(shit[Math.floor(Math.random() * (shit.length - 1))]);
     i += 1;
   }
+
+  console.log(words);
 
   const bottomSection = document.querySelector(".bottomsection");
 
@@ -154,7 +172,7 @@ async function startSession() {
   wordsdiv.className = "words";
 
   typingbox.appendChild(wordsdiv);
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < state.wordcount; i++) {
     const word = document.createElement("div");
     word.className = "word";
     for (let j = 0; j < words[i].length; j++) {
