@@ -54,14 +54,14 @@ function keyPressHandler(e) {
     state.startDate = new Date();
     intervalKey = setInterval(() => {
       const diff = Date.now() - state.startDate.getTime();
-      document.querySelector(".timer").innerText =
-        Math.floor(diff / 1000).toString() + "." + (diff % 1000).toString();
     }, 10);
     state.isTiming = newIsTiming;
   }
 
   if (!newIsTiming && state.isTiming) {
-    clearInterval(intervalKey);
+    if (intervalKey) {
+      clearInterval(intervalKey);
+    }
     state.isTiming = false;
     const diff = Date.now() - state.startDate.getTime();
     let wpm = state.wordcount / (diff / 60000);
@@ -138,7 +138,6 @@ async function endSession(wpm) {
   wordsDiv.remove();
 
   console.log(wpm);
-  startSession();
 }
 
 async function startSession() {
@@ -156,9 +155,9 @@ async function startSession() {
 
   const typingbox = document.createElement("div");
   typingbox.className = "typingbox";
-  const timerDiv = document.createElement("div");
+  const timerDiv = document.createElement("button");
   timerDiv.className = "timer";
-  timerDiv.innerHTML = "0.00";
+  timerDiv.innerHTML = "🔥💀";
   bottomSection.appendChild(timerDiv);
   bottomSection.appendChild(typingbox);
 
@@ -187,6 +186,10 @@ async function startSession() {
 
   window.addEventListener("keydown", keyDownHandler);
   window.addEventListener("keypress", keyPressHandler);
+  timerDiv.addEventListener("click", (e) => {
+    endSession();
+    startSession();
+  });
 }
 
 startSession();
