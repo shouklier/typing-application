@@ -3,10 +3,13 @@ let state = {
   word: 0,
   letter: 0,
   space: false,
+  words: [],
+  startDate: new Date(),
+  isTiming: false,
+  intervalKey: undefined,
 };
 
 function keyDownHandler(e) {
-  console.log("keydowned");
   if (e.key == "Backspace" && state.space) {
     state.space = false;
     getLetter().style.opacity = 0.7;
@@ -23,7 +26,7 @@ function keyDownHandler(e) {
       getLetter().style.opacity = 0.7;
       getLetter().style.color = "white";
       state.word--;
-      state.letter = words[state.word].length - 1;
+      state.letter = state.words[state.word].length - 1;
       state.space = true;
       renderCursor();
     } else {
@@ -35,35 +38,32 @@ function keyDownHandler(e) {
   }
 }
 
-let isTiming = false;
-let intervalKey;
-
 function keyPressHandler(e) {
-  const currentWord = words[state.word];
+  const currentWord = state.words[state.word];
   const currentLetter = currentWord[state.letter];
   const currentKey = e.key;
 
   let newIsTiming = !(
     currentKey == currentLetter &&
-    state.word == words.length - 1 &&
-    state.letter == words[words.length - 1].length - 1
+    state.word == state.words.length - 1 &&
+    state.letter == state.words[state.words.length - 1].length - 1
   );
 
-  if (!isTiming && newIsTiming) {
+  if (!state.isTiming && newIsTiming) {
     // Start the Timer
-    startDate = new Date();
+    state.startDate = new Date();
     intervalKey = setInterval(() => {
-      const diff = Date.now() - startDate.getTime();
+      const diff = Date.now() - state.startDate.getTime();
       document.querySelector(".timer").innerText =
         Math.floor(diff / 1000).toString() + "." + (diff % 1000).toString();
     }, 10);
-    isTiming = newIsTiming;
+    state.isTiming = newIsTiming;
   }
 
-  if (!newIsTiming && isTiming) {
+  if (!newIsTiming && state.isTiming) {
     clearInterval(intervalKey);
-    isTiming = false;
-    const diff = Date.now() - startDate.getTime();
+    state.isTiming = false;
+    const diff = Date.now() - state.startDate.getTime();
     let wpm = state.wordcount / (diff / 60000);
     endSession(wpm);
   }
@@ -98,10 +98,6 @@ function keyPressHandler(e) {
   }
 }
 
-let startDate = new Date();
-
-let words = [];
-
 function getWord() {
   const wordsdiv = document.querySelector(".words");
   return wordsdiv.children[state.word];
@@ -125,16 +121,16 @@ function renderCursor() {
 async function endSession(wpm) {
   window.removeEventListener("keydown", keyDownHandler);
   window.removeEventListener("keypress", keyPressHandler);
-  words = [];
 
   state = {
     wordcount: 15,
     word: 0,
     letter: 0,
     space: false,
+    words: [],
+    isTiming: false,
+    intervalKey: undefined,
   };
-
-  startDate = new Date();
 
   const wordsDiv = document.querySelector(".typingbox");
   const timer = document.querySelector(".timer");
@@ -152,11 +148,9 @@ async function startSession() {
 
   var i = 0;
   while (i < state.wordcount) {
-    words.push(shit[Math.floor(Math.random() * (shit.length - 1))]);
+    state.words.push(shit[Math.floor(Math.random() * (shit.length - 1))]);
     i += 1;
   }
-
-  console.log(words);
 
   const bottomSection = document.querySelector(".bottomsection");
 
@@ -175,10 +169,10 @@ async function startSession() {
   for (let i = 0; i < state.wordcount; i++) {
     const word = document.createElement("div");
     word.className = "word";
-    for (let j = 0; j < words[i].length; j++) {
+    for (let j = 0; j < state.words[i].length; j++) {
       const letter = document.createElement("span");
       letter.className = "letter";
-      letter.innerText = words[i][j];
+      letter.innerText = state.words[i][j];
       word.appendChild(letter);
     }
 
@@ -190,9 +184,6 @@ async function startSession() {
   wordsdiv.appendChild(cursor);
 
   renderCursor();
-
-  isTiming = false;
-  intervalKey = undefined;
 
   window.addEventListener("keydown", keyDownHandler);
   window.addEventListener("keypress", keyPressHandler);
