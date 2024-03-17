@@ -52,20 +52,19 @@ function keyPressHandler(e) {
   if (!state.isTiming && newIsTiming) {
     // Start the Timer
     state.startDate = new Date();
-    intervalKey = setInterval(() => {
+    state.intervalKey = setInterval(() => {
       const diff = Date.now() - state.startDate.getTime();
     }, 10);
     state.isTiming = newIsTiming;
   }
 
   if (!newIsTiming && state.isTiming) {
-    if (intervalKey) {
-      clearInterval(intervalKey);
-    }
     state.isTiming = false;
     const diff = Date.now() - state.startDate.getTime();
     let wpm = state.wordcount / (diff / 60000);
-    endSession(wpm);
+    console.log(wpm);
+    endSession();
+    return;
   }
 
   if (currentKey == " " && state.space) {
@@ -118,9 +117,12 @@ function renderCursor() {
   cursor.style.top = (letter.getBoundingClientRect().top + 7).toString() + "px";
 }
 
-async function endSession(wpm) {
+async function endSession() {
   window.removeEventListener("keydown", keyDownHandler);
   window.removeEventListener("keypress", keyPressHandler);
+  if (state.intervalKey) {
+    clearInterval(state.intervalKey);
+  }
 
   state = {
     wordcount: 15,
@@ -133,11 +135,9 @@ async function endSession(wpm) {
   };
 
   const wordsDiv = document.querySelector(".typingbox");
-  const timer = document.querySelector(".timer");
-  timer.remove();
+  const restartButton = document.querySelector(".restart-button");
+  restartButton.remove();
   wordsDiv.remove();
-
-  console.log(wpm);
 }
 
 async function startSession() {
@@ -155,11 +155,12 @@ async function startSession() {
 
   const typingbox = document.createElement("div");
   typingbox.className = "typingbox";
-  const timerDiv = document.createElement("button");
-  timerDiv.className = "timer";
-  timerDiv.innerHTML = "🔥💀";
-  bottomSection.appendChild(timerDiv);
+  const restartButton = document.createElement("button");
+  restartButton.className = "restart-button";
+  restartButton.innerHTML = '<i data-lucide="rotate-ccw"></i>';
+  bottomSection.appendChild(restartButton);
   bottomSection.appendChild(typingbox);
+  lucide?.createIcons();
 
   const wordsdiv = document.createElement("div");
   wordsdiv.className = "words";
@@ -186,7 +187,7 @@ async function startSession() {
 
   window.addEventListener("keydown", keyDownHandler);
   window.addEventListener("keypress", keyPressHandler);
-  timerDiv.addEventListener("click", (e) => {
+  restartButton.addEventListener("click", (e) => {
     endSession();
     startSession();
   });
