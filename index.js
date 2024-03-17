@@ -1,13 +1,34 @@
-let state = {
+const createDefaultState = () => ({
   wordcount: 15,
   word: 0,
   letter: 0,
   space: false,
   words: [],
   startDate: new Date(),
+  endDate: new Date(),
   isTiming: false,
   intervalKey: undefined,
-};
+  stats: {
+    chars: 0,
+    correct: 0,
+    incorrect: 0,
+  },
+});
+
+let state = createDefaultState();
+
+function generateResults() {
+  const diff = state.endDate.getTime() - state.startDate.getTime();
+  let rawwpm = state.stats.chars / 5 / (diff / 60000);
+  let wpm = state.stats.correct / 5 / (diff / 60000);
+  console.log(wpm, rawwpm);
+  console.log(state);
+
+  let resultsbox = document.querySelector(".resultsbox");
+  resultsbox.style.display = "flex";
+  document.querySelector(".default").innerText = "WPM: " + Math.round(wpm);
+  document.querySelector(".raw").innerText = "Raw WPM: " + Math.round(rawwpm);
+}
 
 function keyDownHandler(e) {
   if (e.key == "Backspace" && state.space) {
@@ -60,40 +81,48 @@ function keyPressHandler(e) {
 
   if (!newIsTiming && state.isTiming) {
     state.isTiming = false;
-    const diff = Date.now() - state.startDate.getTime();
-    let wpm = state.wordcount / (diff / 60000);
-    console.log(wpm);
+    state.endDate = new Date();
     endSession();
+    generateResults();
+
     return;
   }
 
   if (currentKey == " " && state.space) {
     state.word++;
+    state.stats.correct += 1;
     state.space = false;
     state.letter = 0;
     renderCursor();
+    state.stats.chars++;
     return;
   }
 
-  if (currentKey == currentLetter) {
-    getLetter().style.opacity = 1;
-    if (state.letter == currentWord.length - 1) {
-      state.space = true;
-      renderCursor();
+  if (!state.space) {
+    if (currentKey == currentLetter) {
+      getLetter().style.opacity = 1;
+      state.stats.correct += 1;
+      if (state.letter == currentWord.length - 1) {
+        state.space = true;
+        renderCursor();
+      } else {
+        state.letter++;
+        renderCursor();
+      }
     } else {
-      state.letter++;
-      renderCursor();
+      getLetter().style.opacity = 1;
+      getLetter().style.color = "red";
+      state.stats.incorrect += 1;
+
+      if (state.letter == currentWord.length - 1) {
+        state.space = true;
+        renderCursor();
+      } else {
+        state.letter++;
+        renderCursor();
+      }
     }
-  } else {
-    getLetter().style.opacity = 1;
-    getLetter().style.color = "red";
-    if (state.letter == currentWord.length - 1) {
-      state.space = true;
-      renderCursor();
-    } else {
-      state.letter++;
-      renderCursor();
-    }
+    state.stats.chars++;
   }
 }
 
@@ -124,16 +153,6 @@ async function endSession() {
     clearInterval(state.intervalKey);
   }
 
-  state = {
-    wordcount: 15,
-    word: 0,
-    letter: 0,
-    space: false,
-    words: [],
-    isTiming: false,
-    intervalKey: undefined,
-  };
-
   const wordsDiv = document.querySelector(".typingbox");
   const restartButton = document.querySelector(".restart-button");
   restartButton.remove();
@@ -141,6 +160,7 @@ async function endSession() {
 }
 
 async function startSession() {
+  state = createDefaultState();
   const response = await fetch("./100words.txt");
   const text = await response.text();
   const shit = text.split("\n").map((s) => s.trim());

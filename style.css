@@ -120,3 +120,36 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
   outline: none;
 }
+
+.resultsbox {
+  width: 70%;
+  height: 400px;
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.wpms {
+  background-color: red;
+  height: 100%;
+  width: 200px;
+  padding: 20px;
+}
+
+.rightresults {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: blue;
+  height: 100%;
+}
+
+.graph {
+  background-color: purple;
+  flex: 3;
+}
+.accuracy {
+  flex: 1;
+}
