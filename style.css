@@ -3,19 +3,19 @@
   padding: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   box-sizing: border-box;
-  color: whitesmoke;
+  color: black;
 }
 
 body {
-  background-color: #232323;
+  background-color: #00b4d8;
 }
 .navbar {
   width: 100vw;
   height: 70px;
-  background-color: #222222;
+  background-color: #00b4d8;
   display: flex;
   align-items: center;
-  padding: 0px 10px;
+  padding: 0px 220px;
   justify-content: space-between;
 }
 
@@ -59,7 +59,7 @@ body {
 
 .bottomsection {
   height: calc(100vh - 70px);
-  background-color: #363636;
+  background-color: #00b4d8;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -68,7 +68,8 @@ body {
 }
 
 .typingbox {
-  background-color: #232323;
+  background-color: #0077b6;
+  color: #03045e;
   width: 80%;
   height: 400px;
   border-radius: 20px;
@@ -96,10 +97,11 @@ body {
   width: 4px;
   background-color: white;
   transition: all 150ms ease-out;
+  opacity: 1;
 }
 
 .restart-button {
-  background-color: #232323;
+  background-color: #0077b6;
   text-align: center;
   width: 200px;
   font-family: "Consolas", monospace;

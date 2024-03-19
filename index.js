@@ -34,7 +34,7 @@ function keyDownHandler(e) {
   if (e.key == "Backspace" && state.space) {
     state.space = false;
     getLetter().style.opacity = 0.7;
-    getLetter().style.color = "white";
+    getLetter().style.color = "black";
     renderCursor();
     return;
   }
@@ -45,7 +45,7 @@ function keyDownHandler(e) {
     if (state.word == 0 && state.letter == 0) return;
     if (state.letter == 0) {
       getLetter().style.opacity = 0.7;
-      getLetter().style.color = "white";
+      getLetter().style.color = "black";
       state.word--;
       state.letter = state.words[state.word].length - 1;
       state.space = true;
@@ -53,7 +53,7 @@ function keyDownHandler(e) {
     } else {
       state.letter--;
       getLetter().style.opacity = 0.7;
-      getLetter().style.color = "white";
+      getLetter().style.color = "black";
       renderCursor();
     }
   }
